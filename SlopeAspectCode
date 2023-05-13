@@ -1,0 +1,61 @@
+#Thesis slope and aspect test, May 7th
+
+#import workspaces
+import arcpy
+from arcpy.sa import*
+import os
+
+print ("imported arcpy")
+
+#define parameters, shape files, and workspace
+arcpy.env.workspace = "C:\\Users\\Emma Tyrrell\\Documents\\GIS\\AspectPolygonPython"
+arcpy.env.overwriteOutput = True
+sr = arcpy.SpatialReference(2232)
+demFiles = "C:\\Users\\Emma Tyrrell\\Documents\\GIS\\AspectPolygonPython\\DEMFiles"
+gdbName = TestProject.gdb
+
+print ("workspaces defined")
+
+#create walk for slope tool
+walk = arcpy.da.Walk(demFiles, topdown=True, datatype="RasterDataset")
+
+try:
+    #walk for slope and aspect
+    for dirpath, dirnames, filenames in walk:
+        for filename in filenames:
+            print (filename + " for slope")
+
+            shapefile_slope = f"slope_{filename[:-13]}_.tif"
+
+            #run slope tool
+            try:
+
+                #conduct slope
+                outSlope = Slope(os.path.join(dirpath,filename), "DEGREE", 1, "PLANAR", "", "GPU_THEN_CPU")
+                print ("Slope executed")
+
+                #save slope
+                outSlope.save((arcpy.env.workspace + "\\SlopeOutput\\" + shapefile_slope))
+                print ("Slope saved")
+
+            except Exception as ex:
+                print (ex)
+
+        #run aspect tool
+        for filename in filenames:
+            print ((filename + " for aspect"))
+
+            shapefile_aspect = f"aspect_{filename[:-13]}_.tif"
+
+            try:
+
+                #conduct aspect
+                outAspect = Aspect(os.path.join(dirpath,filename), "PLANAR", "", "", "GPU_THEN_CPU")
+                print ("asepct exeuted")
+
+                #save aspect
+                outAspect.save((arcpy.env.workspace + "\\AspectOutput\\" + shapefile_aspect))
+                print ("aspect saved")
+
+            except Exception as ex:
+                print (ex)
